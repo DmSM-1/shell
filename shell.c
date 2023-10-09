@@ -115,15 +115,6 @@ int print_result(int fd){
 }
 
 
-int save_output(int fd, char* buffer){
-    size_t real_size = 0;
-    int num = 0;
-
-    while((read(fd, buffer, COPACITY*COPACITY))>0);
-    return 0;
-}
-
-
 
 void print_traceback(int err_flag){
 
@@ -151,40 +142,42 @@ void dump(char* input, char*** commands, int count, int err_flag){
 }
 
 
+
 int main(){
-    printf("eee\n");
-    char    input_buf[COPACITY] = {0};
-    char*   run_prog_buffer[COPACITY*COPACITY] = {0};
+    char    input_buf[1024] = {0};
     char*** command_buf;
     int     command_count   = 0;
     int     err_flag        = 0;
 
-    DUMP;
     printf(">>> ");
     while(read_to(input_buf)){
         command_buf = parse_command(input_buf, &command_count);
 
         int pipefd[2] = {};
-        pipe(pipefd);
-        //DUMP;
+        int old_pipefd[2] = {};
         
         for (int i = 0; i < command_count && command_buf[i][0][0] != 0; i++){
+            pipe(pipefd);
             int pid = fork();
             if (pid == 0){
-                if(i>0)
-                    dup2(pipefd[0], 0);
+                if(i>0){
+                    dup2(old_pipefd[0], 0);
+                    close(old_pipefd[0]);
+                }
                 dup2(pipefd[1], 1);
                 execvp(command_buf[i][0], command_buf[i]);
                 return -1;
             }else{
                  close(pipefd[1]);
                  wait(&pid);
+                 old_pipefd[0] = pipefd[0];
             }   
         }
         print_result(pipefd[0]);
         printf(">>> ");
         free_comand(command_buf, command_count);
     }
+    
     
     return 0;
 }
