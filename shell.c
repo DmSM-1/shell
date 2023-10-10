@@ -103,9 +103,9 @@ int run_command(char** proc){
 
 
 void print_hello(){
-    printf("Dmitry's Shell (C) MIPT Corporation. All rights reserved.\n\n");
+    printf("Dmitry's Shell (C) MIPT University. All rights reserved.\n\n");
 
-    printf("Try the new cross-platform Shell (https://github.com/DmSM-1/shell)\n");
+    printf("Try the new unix-platform Shell (https://github.com/DmSM-1/shell)\n");
 }
 
 
