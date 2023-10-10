@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <pwd.h>
+#include <errno.h>
 
 
 #define COPACITY 1024
