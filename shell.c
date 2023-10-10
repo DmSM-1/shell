@@ -6,6 +6,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <string.h>
+#include <pwd.h>
 
 
 #define COPACITY 1024
@@ -101,23 +102,10 @@ int run_command(char** proc){
 }
 
 
-int print_result(int fd){
-    char* buffer[COPACITY];
-    size_t real_size = 0;
-    int num = 0;
+void print_hello(){
+    printf("Dmitry's Shell (C) MIPT Corporation. All rights reserved.\n\n");
 
-    while((real_size = read(fd, buffer, COPACITY))>0){
-        for(int i = 0; i < real_size; i -= num)
-           if ((num = write(1, buffer+i, real_size-i)) < 0) 
-                return -1;
-    }
-    return 0;
-}
-
-
-
-void print_traceback(int err_flag){
-
+    printf("Try the new cross-platform Shell (https://github.com/DmSM-1/shell)\n");
 }
 
 
@@ -144,12 +132,18 @@ void dump(char* input, char*** commands, int count, int err_flag){
 
 
 int main(){
-    char    input_buf[1024] = {0};
+    char    input_buf[COPACITY] = {0};
     char*** command_buf;
     int     command_count   = 0;
     int     err_flag        = 0;
+    
+    int getg[16];
+    int len = 16;
+    int uid = (int)getuid();
+    struct passwd* pw = getpwuid(uid);
 
-    printf(">>> ");
+    print_hello();
+    printf("%s >>> ", pw->pw_name);
     while(read_to(input_buf)){
         command_buf = parse_command(input_buf, &command_count);
 
@@ -164,7 +158,8 @@ int main(){
                     dup2(old_pipefd[0], 0);
                     close(old_pipefd[0]);
                 }
-                dup2(pipefd[1], 1);
+                if (i<command_count-1)
+                    dup2(pipefd[1], 1);
                 execvp(command_buf[i][0], command_buf[i]);
                 return -1;
             }else{
@@ -173,11 +168,8 @@ int main(){
                  old_pipefd[0] = pipefd[0];
             }   
         }
-        print_result(pipefd[0]);
-        printf(">>> ");
+        printf("%s >>> ", pw->pw_name);
         free_comand(command_buf, command_count);
-    }
-    
-    
+    }   
     return 0;
 }
