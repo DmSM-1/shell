@@ -160,7 +160,8 @@ int main(){
                 }
                 if (i<command_count-1)
                     dup2(pipefd[1], 1);
-                execvp(command_buf[i][0], command_buf[i]);
+                if(execvp(command_buf[i][0], command_buf[i])<0)
+                    perror(strerror(errno));
                 return -1;
             }else{
                  close(pipefd[1]);
